@@ -9,17 +9,18 @@ import calendar
 
 
 
-lista = []
+lista = ["Ene","07","fiesta","24:45"]
 lista_diaria = []
 
 bot = telebot.TeleBot("347218102:AAFmZbhaoJgU2PvlWpEaNujwz8L5yLpsp-Q")
 tb = telebot.AsyncTeleBot("347218102:AAFmZbhaoJgU2PvlWpEaNujwz8L5yLpsp-Q")
 
 ################################CONSULTA FECHA ACTUAL##########################
-@bot.message_handler(regexp="fecha hoy")
+@bot.message_handler(regexp="fecha de hoy")
 def manejo_consulta(message):
     ahora = date.today()
     bot.send_message(message.chat.id,"Fecha: " + str(ahora))
+    bot.send_message(message.chat.id,"dia: " + str(ahora)[5:7])
     
     
 
@@ -51,16 +52,31 @@ def send_welcome(message):
 
 @bot.message_handler(regexp="tarea para hoy")
 def manejo_consulta(message):
-    funcion_lista(message)
+    ahora = date.today()
+    if (len(lista)!=0):
+        for x in range (0,len(lista)):
+            if(((x//4)== (x / 4)) and (str(ahora)[5:7] == lista[x+1]) and ((str(ahora)[8:10] == lista[x]))):
+                    
+                    if (str(lista[x+3]) != "99"):
+                        bot.send_message(message.chat.id,str((x//4)+1) + ") Tenes una " + lista[x+2] + " el " + lista[x+1] +" de " + lista[x] + " a las " + str(lista[x+3]) + " hs.")
+                    else:
+                        bot.send_message(message.chat.id,str((x//4)+1) + ") Tenes una " + lista[x+2] + " el " + lista[x+1] +" de " + lista[x])
+        else:
+            bot.send_message(message.chat.id,"Nada")
+            bot.send_message(message.chat.id,"dia: " + str(ahora)[5:7])
+            bot.send_message(message.chat.id,"mes: " + str(ahora)[8:10])
 
 
 
-@bot.message_handler(regexp="cosa para hacer")
+@bot.message_handler(regexp="cosas para hacer")
 def funcion_lista(message):
     if (len(lista)!=0):
         for x in range (0,len(lista)):
             if((x//4)== (x / 4)):
-                bot.send_message(message.chat.id,(x /4) + ") "  + lista[x+3] + " el " + lista[x+2] + " de " + lista[x+1] )
+                if (str(lista[x+3]) != "99"):
+                    bot.send_message(message.chat.id,str((x//4)+1) + ") Tenes una " + lista[x+2] + " el " + lista[x+1] +" de " + lista[x] + " a las " + str(lista[x+3]) + " hs.")
+                else:
+                    bot.send_message(message.chat.id,str((x//4)+1) + ") Tenes una " + lista[x+2] + " el " + lista[x+1] +" de " + lista[x])
     else:
         bot.send_message(message.chat.id,"Nada")
  
@@ -100,7 +116,17 @@ def agregar_paso_3(message):
     markup = types.ForceReply(selective=False)
     bot.send_message(message.chat.id, "Que evento :", reply_markup=markup)
     lista.append(message.text)
-    bot.register_next_step_handler(message, prueba)
+    bot.register_next_step_handler(message,agregar_paso_4)
+    
+def agregar_paso_4(message):
+    markup = types.ForceReply(selective=False)
+    bot.send_message(message.chat.id, "A que hora (si no sabe ingrese 99): ", reply_markup=markup)
+    lista.append(message.text)
+    bot.register_next_step_handler(message,confirmacion)
+    
+def confirmacion(message):
+    bot.send_message(message.chat.id,"Evento agregado")
+    
     
 
 bot.polling()
